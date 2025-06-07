@@ -177,7 +177,7 @@ function updateDisplay() {
 
 function checkWord(word) {
     const wordLower = word.toLowerCase();
-    if (validWords.has(wordLower) && word.length >= 3) {
+    if (word.length >= 3 && validWords.has(wordLower)) {
         // Check if we have all letters
         const wordLetters = word.split("");
         const availableLetters = [...snakeLetters];
