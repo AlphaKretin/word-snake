@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Snake Word Game</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 20px;
+                background: #1a1a2e;
+                color: #eee;
+                font-family: "Courier New", monospace;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                min-height: 100vh;
+            }
+
+            .game-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .game-info {
+                display: flex;
+                gap: 30px;
+                font-size: 18px;
+                font-weight: bold;
+            }
+
+            .score {
+                color: #4ecdc4;
+            }
+
+            .letters {
+                color: #ffe66d;
+            }
+
+            canvas {
+                border: 3px solid #4ecdc4;
+                background: #16213e;
+                border-radius: 5px;
+            }
+
+            .controls {
+                text-align: center;
+                margin-top: 20px;
+                font-size: 14px;
+                color: #bbb;
+            }
+
+            .word-input {
+                margin-top: 15px;
+                text-align: center;
+            }
+
+            .current-word {
+                font-size: 18px;
+                color: #ff6b6b;
+                min-height: 25px;
+                margin-bottom: 10px;
+            }
+
+            .game-over {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.9);
+                padding: 30px;
+                border-radius: 10px;
+                text-align: center;
+                border: 2px solid #ff6b6b;
+                display: none;
+            }
+
+            .restart-btn {
+                background: #4ecdc4;
+                color: #1a1a2e;
+                border: none;
+                padding: 10px 20px;
+                font-size: 16px;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-top: 15px;
+                font-family: inherit;
+            }
+
+            .restart-btn:hover {
+                background: #45b7aa;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="game-container">
+            <div class="game-info">
+                <div class="score">Score: <span id="score">0</span></div>
+                <div class="letters">Snake Letters: <span id="snake-letters"></span></div>
+            </div>
+
+            <canvas id="gameCanvas" width="600" height="400"></canvas>
+
+            <div class="word-input">
+                <div class="current-word" id="current-word"></div>
+                <div style="color: #bbb">Type words using your snake's letters!</div>
+            </div>
+
+            <div class="controls">
+                <div>Use arrow keys to move • Collect letters • Type words to score points</div>
+                <div>Longer words = more points!</div>
+            </div>
+        </div>
+
+        <div class="game-over" id="game-over">
+            <h2 style="color: #ff6b6b; margin-top: 0">Game Over!</h2>
+            <div>Final Score: <span id="final-score">0</span></div>
+            <button class="restart-btn" onclick="restartGame()">Play Again</button>
+        </div>
+    </body>
+    <script src="words.js"></script>
+    <script src="game.js"></script>
+</html>
