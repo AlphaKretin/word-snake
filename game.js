@@ -73,6 +73,8 @@ let currentWord = "";
 let letterBag = [];
 let wordHistory = [];
 const MAX_HISTORY = 10;
+let pendingWordRemoval = null; // Queue for word processing between game steps
+let isProcessingWord = false; // Flag to disable collision detection during word processing
 
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -197,6 +199,12 @@ function drawGame() {
 }
 
 function moveSnake() {
+    // Process any pending word removal first
+    if (pendingWordRemoval) {
+        processWordRemoval(pendingWordRemoval);
+        pendingWordRemoval = null;
+    }
+
     // Apply the pending direction change at the start of the tick
     direction = { ...nextDirection };
     // If there's a buffered direction and it's orthogonal to current direction, apply it
@@ -215,11 +223,12 @@ function moveSnake() {
         return;
     }
 
-    // Check self collision
-    if (snake.some((segment) => segment.x === head.x && segment.y === head.y)) {
+    // Check self collision only if not processing a word
+    if (!isProcessingWord && snake.some((segment) => segment.x === head.x && segment.y === head.y)) {
         gameOver();
         return;
     }
+
     snake.unshift(head); // Check letter collection
     const letterIndex = letters.findIndex((letter) => letter.x === head.x && letter.y === head.y);
     if (letterIndex !== -1) {
@@ -269,7 +278,7 @@ function updateDisplay() {
         }
     }
 
-    // Create HTML with unused letters first, then faded used letters
+    // Create HTML with unused and used letters
     const letterElements = remainingLetters.map((letter, index) => {
         if (usedIndices.has(index)) {
             return `<span class="letter-used">${letter}</span>`;
@@ -316,33 +325,12 @@ function checkWord(word) {
         const indicesToRemove = wordLetters
             .map((letter) => snakeLetters.indexOf(letter))
             .filter((index) => index !== -1)
-            .sort((a, b) => b - a); // Sort in descending order to remove from back to front        // Sort indices in descending order so we remove from back to front
-        indicesToRemove.sort((a, b) => b - a);
+            .sort((a, b) => b - a); // Sort in descending order to remove from back to front
 
-        // First remove the letters
-        for (const index of indicesToRemove) {
-            snakeLetters.splice(index, 1);
-        }
-
-        // Then remove the corresponding snake segments
-        // We add 1 to each index because the head doesn't have a letter
+        // Queue up the word removal for the next game step
         const segmentIndicesToRemove = indicesToRemove.map((i) => i + 1);
+        pendingWordRemoval = { indicesToRemove, segmentIndicesToRemove };
 
-        // Remove segments from back to front
-        for (const segmentIndex of segmentIndicesToRemove) {
-            snake.splice(segmentIndex, 1);
-
-            // Smoothly move remaining segments to close the gap
-            for (let i = segmentIndex; i < snake.length; i++) {
-                const nextSegment = snake[i];
-                const prevSegment = snake[i - 1];
-                // Move segment towards the previous segment
-                if (nextSegment.x < prevSegment.x) nextSegment.x++;
-                if (nextSegment.x > prevSegment.x) nextSegment.x--;
-                if (nextSegment.y < prevSegment.y) nextSegment.y++;
-                if (nextSegment.y > prevSegment.y) nextSegment.y--;
-            }
-        }
         // Award points using adjusted scoring system
         // 3 letters = 0 points (valid but no score)
         // 4 letters = 100 points (minimum scoring word)
@@ -354,7 +342,7 @@ function checkWord(word) {
             points = Math.floor(100 * Math.pow(word.length - 3, 2));
         }
         score += points;
-        updateWordHistory(word, points); // Add to history
+        updateWordHistory(word, points);
         return true;
     }
     return false;
@@ -468,3 +456,35 @@ refillLetterBag();
 spawnLetters();
 updateDisplay();
 gameLoop();
+
+function processWordRemoval(wordInfo) {
+    const { indicesToRemove, segmentIndicesToRemove } = wordInfo;
+
+    // First remove the letters
+    for (const index of indicesToRemove) {
+        snakeLetters.splice(index, 1);
+    }
+
+    // Then remove the corresponding snake segments
+    for (const segmentIndex of segmentIndicesToRemove) {
+        snake.splice(segmentIndex, 1);
+
+        // Smoothly move remaining segments to close the gap
+        // Process from the segment after the removed one up to the tail
+        for (let i = segmentIndex; i < snake.length; i++) {
+            const nextSegment = snake[i];
+            const prevSegment = snake[i - 1];
+
+            // Calculate the direction to move
+            const dx = Math.sign(prevSegment.x - nextSegment.x);
+            const dy = Math.sign(prevSegment.y - nextSegment.y);
+
+            // Only move one coordinate at a time to prevent diagonal movement
+            if (dx !== 0) {
+                nextSegment.x += dx;
+            } else if (dy !== 0) {
+                nextSegment.y += dy;
+            }
+        }
+    }
+}
