@@ -1,3 +1,53 @@
+// High score management
+const MAX_HIGH_SCORES = 10;
+
+function loadHighScores() {
+    const scores = localStorage.getItem("wordSnakeHighScores");
+    // Initialize empty array or clean up existing scores to ensure exactly 10 entries
+    if (!scores) return [];
+    const parsedScores = JSON.parse(scores);
+    parsedScores.sort((a, b) => b.score - a.score);
+    return parsedScores.slice(0, MAX_HIGH_SCORES);
+}
+
+function saveHighScore(score) {
+    const scores = loadHighScores();
+    const newScore = {
+        score: score,
+        date: new Date().toLocaleDateString(),
+    };
+
+    // Only add the score if it's better than the lowest score when we have 10 scores,
+    // or if we have fewer than 10 scores
+    if (scores.length < MAX_HIGH_SCORES || score > (scores[scores.length - 1]?.score || 0)) {
+        scores.push(newScore);
+        scores.sort((a, b) => b.score - a.score);
+        scores.splice(MAX_HIGH_SCORES); // Ensure exactly 10 or fewer scores
+
+        localStorage.setItem("wordSnakeHighScores", JSON.stringify(scores));
+        updateHighScoreDisplay();
+    }
+}
+
+function updateHighScoreDisplay() {
+    const scores = loadHighScores();
+    const highScoresElement = document.getElementById("high-scores");
+    highScoresElement.innerHTML = scores
+        .map(
+            (score, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${score.score}</td>
+                <td>${score.date}</td>
+            </tr>
+        `
+        )
+        .join("");
+}
+
+// Initialize high scores display
+updateHighScoreDisplay();
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const scoreElement = document.getElementById("score");
@@ -18,6 +68,8 @@ let score = 0;
 let gameRunning = true;
 let currentWord = "";
 let letterBag = [];
+let wordHistory = [];
+const MAX_HISTORY = 10;
 
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -175,6 +227,18 @@ function updateDisplay() {
     currentWordElement.textContent = currentWord;
 }
 
+function updateWordHistory(word, points) {
+    wordHistory.unshift({ word, points });
+    if (wordHistory.length > MAX_HISTORY) {
+        wordHistory.pop();
+    }
+
+    const historyElement = document.getElementById("word-history");
+    historyElement.innerHTML = wordHistory
+        .map((entry) => `<tr><td>${entry.word}</td><td>${entry.points}</td></tr>`)
+        .join("");
+}
+
 function checkWord(word) {
     const wordLower = word.toLowerCase();
     if (word.length >= 3 && validWords.has(wordLower)) {
@@ -225,6 +289,7 @@ function checkWord(word) {
         // 5 letters = 250 points, 6 letters = 360 points, etc.
         const points = Math.floor(10 * Math.pow(word.length, 2));
         score += points;
+        updateWordHistory(word, points); // Add to history
         return true;
     }
     return false;
@@ -234,6 +299,7 @@ function gameOver() {
     gameRunning = false;
     finalScoreElement.textContent = score;
     gameOverElement.style.display = "block";
+    saveHighScore(score);
 }
 
 function restartGame() {
@@ -243,6 +309,8 @@ function restartGame() {
     score = 0;
     gameRunning = true;
     currentWord = "";
+    wordHistory = []; // Clear word history
+    document.getElementById("word-history").innerHTML = ""; // Clear history display
     gameOverElement.style.display = "none";
     refillLetterBag(); // Initialize the letter bag
     spawnLetters();

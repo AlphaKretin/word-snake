@@ -1,0 +1,139 @@
+body {
+    margin: 0;
+    padding: 20px;
+    background: #1a1a2e;
+    color: #eee;
+    font-family: "Courier New", monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.game-info {
+    display: flex;
+    gap: 30px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.score {
+    color: #4ecdc4;
+}
+
+.letters {
+    color: #ffe66d;
+}
+
+canvas {
+    border: 3px solid #4ecdc4;
+    background: #16213e;
+    border-radius: 5px;
+}
+
+.controls {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #bbb;
+}
+
+.word-input {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.current-word {
+    font-size: 18px;
+    color: #ff6b6b;
+    min-height: 25px;
+    margin-bottom: 10px;
+}
+
+.game-over {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    border: 2px solid #ff6b6b;
+    display: none;
+}
+
+.restart-btn {
+    background: #4ecdc4;
+    color: #1a1a2e;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 15px;
+    font-family: inherit;
+}
+.restart-btn:hover {
+    background: #45b7aa;
+}
+
+.word-history,
+.high-scores {
+    background: rgba(26, 26, 46, 0.8);
+    padding: 15px;
+    border-radius: 5px;
+    border: 2px solid #4ecdc4;
+    min-width: 200px;
+}
+
+.word-history h3,
+.high-scores h3 {
+    margin: 0 0 10px 0;
+    color: #4ecdc4;
+    text-align: center;
+}
+
+.word-history table,
+.high-scores table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.word-history th,
+.high-scores th {
+    color: #ffe66d;
+    text-align: left;
+    padding: 5px;
+    border-bottom: 1px solid #4ecdc4;
+}
+
+.word-history td,
+.high-scores td {
+    padding: 5px;
+    border-bottom: 1px solid rgba(78, 205, 196, 0.2);
+}
+
+.word-history tr:last-child td,
+.high-scores tr:last-child td {
+    border-bottom: none;
+}
+
+/* Additional high scores specific styles */
+.high-scores td:first-child {
+    color: #ffe66d;
+    font-weight: bold;
+    width: 30px;
+}
+
+.high-scores td:last-child {
+    font-size: 0.9em;
+    color: #bbb;
+}
