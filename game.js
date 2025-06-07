@@ -17,10 +17,64 @@ let snakeLetters = [];
 let score = 0;
 let gameRunning = true;
 let currentWord = "";
+let letterBag = [];
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function refillLetterBag() {
+    // Letter frequencies inspired by English language frequency
+    const letterFrequencies = {
+        E: 12, // Most common
+        A: 9,
+        I: 9,
+        O: 8,
+        N: 6,
+        R: 6,
+        T: 6,
+        S: 6,
+        L: 4,
+        U: 4,
+        D: 4,
+        G: 3,
+        B: 2,
+        C: 2,
+        M: 2,
+        P: 2,
+        F: 2,
+        H: 2,
+        V: 2,
+        W: 2,
+        Y: 2,
+        K: 1,
+        J: 1,
+        X: 1,
+        Q: 1,
+        Z: 1,
+    };
+
+    // Create the bag with the specified frequencies
+    letterBag = [];
+    for (const [letter, frequency] of Object.entries(letterFrequencies)) {
+        for (let i = 0; i < frequency; i++) {
+            letterBag.push(letter);
+        }
+    }
+
+    // Shuffle the bag
+    shuffleArray(letterBag);
+}
 
 function getRandomLetter() {
-    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    return letters[Math.floor(Math.random() * letters.length)];
+    if (letterBag.length === 0) {
+        refillLetterBag();
+    }
+    return letterBag.pop();
 }
 
 function spawnLetters() {
@@ -53,13 +107,14 @@ function drawGame() {
         ctx.fillStyle = index === 0 ? "#4ecdc4" : "#45b7aa";
         ctx.fillRect(segment.x * GRID_SIZE, segment.y * GRID_SIZE, GRID_SIZE - 2, GRID_SIZE - 2);
 
-        // Draw letter on snake segment
-        if (snakeLetters[index]) {
+        // Draw letter on snake segment, skip the head (index 0)
+        if (index > 0 && index - 1 < snakeLetters.length) {
+            // Draw letters in order, starting from the segment after the head
             ctx.fillStyle = "#1a1a2e";
             ctx.font = "14px Courier New";
             ctx.textAlign = "center";
             ctx.fillText(
-                snakeLetters[index],
+                snakeLetters[index - 1],
                 segment.x * GRID_SIZE + GRID_SIZE / 2,
                 segment.y * GRID_SIZE + GRID_SIZE / 2 + 5
             );
@@ -97,18 +152,17 @@ function moveSnake() {
         return;
     }
 
-    snake.unshift(head);
-
-    // Check letter collection
+    snake.unshift(head); // Check letter collection
     const letterIndex = letters.findIndex((letter) => letter.x === head.x && letter.y === head.y);
     if (letterIndex !== -1) {
         const collectedLetter = letters[letterIndex].letter;
-        snakeLetters.unshift(collectedLetter);
+        snakeLetters.push(collectedLetter); // Add to end instead of start
         spawnLetters();
     } else {
         snake.pop();
-        if (snakeLetters.length > snake.length) {
-            snakeLetters.pop();
+        if (snakeLetters.length > snake.length - 1) {
+            // -1 because we don't count the head
+            snakeLetters.shift(); // Remove from start instead of end
         }
     }
 
@@ -122,8 +176,8 @@ function updateDisplay() {
 }
 
 function checkWord(word) {
-    const wordUpper = word.toLowerCase();
-    if (validWords.has(wordUpper) && word.length >= 3) {
+    const wordLower = word.toLowerCase();
+    if (validWords.has(wordLower) && word.length >= 3) {
         // Check if we have all letters
         const wordLetters = word.split("");
         const availableLetters = [...snakeLetters];
@@ -134,19 +188,43 @@ function checkWord(word) {
                 return false;
             }
             availableLetters.splice(index, 1);
+        } // Find all indices to remove
+        const indicesToRemove = wordLetters
+            .map((letter) => snakeLetters.indexOf(letter))
+            .filter((index) => index !== -1)
+            .sort((a, b) => b - a); // Sort in descending order to remove from back to front        // Sort indices in descending order so we remove from back to front
+        indicesToRemove.sort((a, b) => b - a);
+
+        // First remove the letters
+        for (const index of indicesToRemove) {
+            snakeLetters.splice(index, 1);
         }
 
-        // Remove used letters from snake
-        for (let letter of wordLetters) {
-            const index = snakeLetters.indexOf(letter);
-            if (index !== -1) {
-                snakeLetters.splice(index, 1);
-                snake.splice(index + 1, 1); // +1 because head doesn't have a letter
+        // Then remove the corresponding snake segments
+        // We add 1 to each index because the head doesn't have a letter
+        const segmentIndicesToRemove = indicesToRemove.map((i) => i + 1);
+
+        // Remove segments from back to front
+        for (const segmentIndex of segmentIndicesToRemove) {
+            snake.splice(segmentIndex, 1);
+
+            // Smoothly move remaining segments to close the gap
+            for (let i = segmentIndex; i < snake.length; i++) {
+                const nextSegment = snake[i];
+                const prevSegment = snake[i - 1];
+                // Move segment towards the previous segment
+                if (nextSegment.x < prevSegment.x) nextSegment.x++;
+                if (nextSegment.x > prevSegment.x) nextSegment.x--;
+                if (nextSegment.y < prevSegment.y) nextSegment.y++;
+                if (nextSegment.y > prevSegment.y) nextSegment.y--;
             }
         }
-
-        // Award points
-        score += word.length * 10;
+        // Award points using quadratic scoring
+        // Base points are 10, but we multiply by length^2 to reward longer words
+        // This means: 3 letters = 90 points, 4 letters = 160 points,
+        // 5 letters = 250 points, 6 letters = 360 points, etc.
+        const points = Math.floor(10 * Math.pow(word.length, 2));
+        score += points;
         return true;
     }
     return false;
@@ -166,6 +244,7 @@ function restartGame() {
     gameRunning = true;
     currentWord = "";
     gameOverElement.style.display = "none";
+    refillLetterBag(); // Initialize the letter bag
     spawnLetters();
     updateDisplay();
 }
@@ -192,16 +271,8 @@ document.addEventListener("keydown", (e) => {
             if (direction.x === 0) direction = { x: 1, y: 0 };
             e.preventDefault();
             break;
-        case "Enter":
-            if (currentWord.length >= 3) {
-                if (checkWord(currentWord)) {
-                    currentWord = "";
-                }
-            }
-            e.preventDefault();
-            break;
         case "Backspace":
-            currentWord = currentWord.slice(0, -1);
+            currentWord = "";
             e.preventDefault();
             break;
         default:
@@ -210,6 +281,10 @@ document.addEventListener("keydown", (e) => {
                 const letter = e.key.toUpperCase();
                 if (snakeLetters.includes(letter)) {
                     currentWord += letter;
+                    // Check if current word is valid immediately
+                    if (currentWord.length >= 3 && checkWord(currentWord)) {
+                        currentWord = "";
+                    }
                 }
                 e.preventDefault();
             }
@@ -226,6 +301,7 @@ function gameLoop() {
 }
 
 // Initialize game
+refillLetterBag();
 spawnLetters();
 updateDisplay();
 gameLoop();
