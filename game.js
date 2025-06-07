@@ -286,11 +286,16 @@ function checkWord(word) {
                 if (nextSegment.y > prevSegment.y) nextSegment.y--;
             }
         }
-        // Award points using quadratic scoring
-        // Base points are 10, but we multiply by length^2 to reward longer words
-        // This means: 3 letters = 90 points, 4 letters = 160 points,
-        // 5 letters = 250 points, 6 letters = 360 points, etc.
-        const points = Math.floor(10 * Math.pow(word.length, 2));
+        // Award points using adjusted scoring system
+        // 3 letters = 0 points (valid but no score)
+        // 4 letters = 100 points (minimum scoring word)
+        // 5 letters = 250 points
+        // 6 letters = 450 points
+        // etc., scaling quadratically after 4 letters
+        let points = 0;
+        if (word.length > 3) {
+            points = Math.floor(100 * Math.pow(word.length - 3, 2));
+        }
         score += points;
         updateWordHistory(word, points); // Add to history
         return true;
