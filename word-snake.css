@@ -32,6 +32,10 @@ body {
     color: #ffe66d;
 }
 
+.letter-used {
+    color: #8b8048; /* Darker, less saturated version of #ffe66d */
+}
+
 canvas {
     border: 3px solid #4ecdc4;
     background: #16213e;

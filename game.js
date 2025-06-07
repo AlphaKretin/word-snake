@@ -236,7 +236,46 @@ function moveSnake() {
 
 function updateDisplay() {
     scoreElement.textContent = score;
-    snakeLettersElement.textContent = snakeLetters.join(" ");
+
+    // Split letters into used and unused based on current word
+    const remainingLetters = [...snakeLetters];
+    const usedIndices = new Set();
+
+    // Count how many times each letter appears in the current word
+    const letterCounts = {};
+    for (const letter of currentWord) {
+        letterCounts[letter] = (letterCounts[letter] || 0) + 1;
+    }
+
+    // Find and mark used letters, handling duplicates
+    for (const [letter, count] of Object.entries(letterCounts)) {
+        let found = 0;
+        for (let i = 0; i < remainingLetters.length; i++) {
+            if (remainingLetters[i] === letter) {
+                if (found < count) {
+                    usedIndices.add(i);
+                    found++;
+                }
+            }
+        }
+    }
+
+    // Create HTML with unused letters first, then faded used letters
+    const letterElements = remainingLetters.map((letter, index) => {
+        if (usedIndices.has(index)) {
+            return `<span class="letter-used">${letter}</span>`;
+        }
+        return `<span>${letter}</span>`;
+    });
+
+    // Sort so unused letters appear first
+    letterElements.sort((a, b) => {
+        const aUsed = a.includes("letter-used");
+        const bUsed = b.includes("letter-used");
+        return aUsed - bUsed;
+    });
+
+    snakeLettersElement.innerHTML = letterElements.join(" ");
     currentWordElement.textContent = currentWord;
 }
 
