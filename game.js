@@ -1,3 +1,13 @@
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const scoreElement = document.getElementById("score");
+const snakeLettersElement = document.getElementById("snake-letters");
+const currentWordElement = document.getElementById("current-word");
+const gameOverElement = document.getElementById("game-over");
+const finalScoreElement = document.getElementById("final-score");
+const highScoresElement = document.getElementById("high-scores");
+const historyElement = document.getElementById("word-history");
+
 // High score management
 const MAX_HIGH_SCORES = 10;
 
@@ -31,7 +41,6 @@ function saveHighScore(score) {
 
 function updateHighScoreDisplay() {
     const scores = loadHighScores();
-    const highScoresElement = document.getElementById("high-scores");
     highScoresElement.innerHTML = scores
         .map(
             (score, index) => `
@@ -47,14 +56,6 @@ function updateHighScoreDisplay() {
 
 // Initialize high scores display
 updateHighScoreDisplay();
-
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-const scoreElement = document.getElementById("score");
-const snakeLettersElement = document.getElementById("snake-letters");
-const currentWordElement = document.getElementById("current-word");
-const gameOverElement = document.getElementById("game-over");
-const finalScoreElement = document.getElementById("final-score");
 
 const GRID_SIZE = 20;
 const CANVAS_WIDTH = canvas.width;
@@ -233,7 +234,6 @@ function updateWordHistory(word, points) {
         wordHistory.pop();
     }
 
-    const historyElement = document.getElementById("word-history");
     historyElement.innerHTML = wordHistory
         .map((entry) => `<tr><td>${entry.word}</td><td>${entry.points}</td></tr>`)
         .join("");
@@ -310,7 +310,7 @@ function restartGame() {
     gameRunning = true;
     currentWord = "";
     wordHistory = []; // Clear word history
-    document.getElementById("word-history").innerHTML = ""; // Clear history display
+    historyElement.innerHTML = ""; // Clear history display
     gameOverElement.style.display = "none";
     refillLetterBag(); // Initialize the letter bag
     spawnLetters();
