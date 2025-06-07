@@ -275,16 +275,18 @@ document.addEventListener("keydown", (e) => {
             currentWord = "";
             e.preventDefault();
             break;
+        case "Enter":
+            if (currentWord.length >= 3 && checkWord(currentWord)) {
+                currentWord = "";
+            }
+            e.preventDefault();
+            break;
         default:
             // Letter keys for word formation
             if (e.key.length === 1 && e.key.match(/[a-zA-Z]/)) {
                 const letter = e.key.toUpperCase();
                 if (snakeLetters.includes(letter)) {
                     currentWord += letter;
-                    // Check if current word is valid immediately
-                    if (currentWord.length >= 3 && checkWord(currentWord)) {
-                        currentWord = "";
-                    }
                 }
                 e.preventDefault();
             }
