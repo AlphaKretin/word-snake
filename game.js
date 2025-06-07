@@ -63,6 +63,7 @@ const CANVAS_HEIGHT = canvas.height;
 
 let snake = [{ x: 10, y: 10 }];
 let direction = { x: 1, y: 0 };
+let nextDirection = { x: 1, y: 0 };
 let letters = [];
 let snakeLetters = [];
 let score = 0;
@@ -191,6 +192,8 @@ function drawGame() {
 }
 
 function moveSnake() {
+    // Apply the pending direction change at the start of the tick
+    direction = { ...nextDirection };
     const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
 
     // Check wall collision
@@ -305,6 +308,7 @@ function gameOver() {
 function restartGame() {
     snake = [{ x: 10, y: 10 }];
     direction = { x: 1, y: 0 };
+    nextDirection = { x: 1, y: 0 };
     snakeLetters = [];
     score = 0;
     gameRunning = true;
@@ -319,24 +323,22 @@ function restartGame() {
 
 // Event listeners
 document.addEventListener("keydown", (e) => {
-    if (!gameRunning) return;
-
-    // Arrow keys for movement
+    if (!gameRunning) return; // Arrow keys for movement
     switch (e.key) {
         case "ArrowUp":
-            if (direction.y === 0) direction = { x: 0, y: -1 };
+            if (direction.y === 0) nextDirection = { x: 0, y: -1 };
             e.preventDefault();
             break;
         case "ArrowDown":
-            if (direction.y === 0) direction = { x: 0, y: 1 };
+            if (direction.y === 0) nextDirection = { x: 0, y: 1 };
             e.preventDefault();
             break;
         case "ArrowLeft":
-            if (direction.x === 0) direction = { x: -1, y: 0 };
+            if (direction.x === 0) nextDirection = { x: -1, y: 0 };
             e.preventDefault();
             break;
         case "ArrowRight":
-            if (direction.x === 0) direction = { x: 1, y: 0 };
+            if (direction.x === 0) nextDirection = { x: 1, y: 0 };
             e.preventDefault();
             break;
         case "Backspace":
