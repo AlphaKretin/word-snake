@@ -64,6 +64,7 @@ const CANVAS_HEIGHT = canvas.height;
 let snake = [{ x: 10, y: 10 }];
 let direction = { x: 1, y: 0 };
 let nextDirection = { x: 1, y: 0 };
+let bufferedDirection = null; // Store a buffered direction for smooth turning
 let letters = [];
 let snakeLetters = [];
 let score = 0;
@@ -194,6 +195,14 @@ function drawGame() {
 function moveSnake() {
     // Apply the pending direction change at the start of the tick
     direction = { ...nextDirection };
+    // If there's a buffered direction and it's orthogonal to current direction, apply it
+    if (
+        bufferedDirection &&
+        ((bufferedDirection.x !== 0 && direction.y !== 0) || (bufferedDirection.y !== 0 && direction.x !== 0))
+    ) {
+        nextDirection = bufferedDirection;
+        bufferedDirection = null;
+    }
     const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
 
     // Check wall collision
@@ -289,8 +298,8 @@ function checkWord(word) {
         // Award points using adjusted scoring system
         // 3 letters = 0 points (valid but no score)
         // 4 letters = 100 points (minimum scoring word)
-        // 5 letters = 250 points
-        // 6 letters = 450 points
+        // 5 letters = 400 points
+        // 6 letters = 900 points
         // etc., scaling quadratically after 4 letters
         let points = 0;
         if (word.length > 3) {
@@ -314,6 +323,7 @@ function restartGame() {
     snake = [{ x: 10, y: 10 }];
     direction = { x: 1, y: 0 };
     nextDirection = { x: 1, y: 0 };
+    bufferedDirection = null;
     snakeLetters = [];
     score = 0;
     gameRunning = true;
@@ -330,22 +340,50 @@ function restartGame() {
 document.addEventListener("keydown", (e) => {
     if (!gameRunning) return; // Arrow keys for movement
     switch (e.key) {
-        case "ArrowUp":
-            if (direction.y === 0) nextDirection = { x: 0, y: -1 };
+        case "ArrowUp": {
+            const newDir = { x: 0, y: -1 };
+            if (direction.y === 0) {
+                nextDirection = newDir;
+                bufferedDirection = null;
+            } else if (nextDirection.y === 0) {
+                bufferedDirection = newDir;
+            }
             e.preventDefault();
             break;
-        case "ArrowDown":
-            if (direction.y === 0) nextDirection = { x: 0, y: 1 };
+        }
+        case "ArrowDown": {
+            const newDir = { x: 0, y: 1 };
+            if (direction.y === 0) {
+                nextDirection = newDir;
+                bufferedDirection = null;
+            } else if (nextDirection.y === 0) {
+                bufferedDirection = newDir;
+            }
             e.preventDefault();
             break;
-        case "ArrowLeft":
-            if (direction.x === 0) nextDirection = { x: -1, y: 0 };
+        }
+        case "ArrowLeft": {
+            const newDir = { x: -1, y: 0 };
+            if (direction.x === 0) {
+                nextDirection = newDir;
+                bufferedDirection = null;
+            } else if (nextDirection.x === 0) {
+                bufferedDirection = newDir;
+            }
             e.preventDefault();
             break;
-        case "ArrowRight":
-            if (direction.x === 0) nextDirection = { x: 1, y: 0 };
+        }
+        case "ArrowRight": {
+            const newDir = { x: 1, y: 0 };
+            if (direction.x === 0) {
+                nextDirection = newDir;
+                bufferedDirection = null;
+            } else if (nextDirection.x === 0) {
+                bufferedDirection = newDir;
+            }
             e.preventDefault();
             break;
+        }
         case "Backspace":
             currentWord = "";
             e.preventDefault();
