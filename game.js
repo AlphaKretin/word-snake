@@ -132,24 +132,28 @@ function getRandomLetter() {
     return letterBag.pop();
 }
 
-function spawnLetters() {
-    letters = [];
-    for (let i = 0; i < 2; i++) {
-        let x, y;
-        do {
-            x = Math.floor(Math.random() * (CANVAS_WIDTH / GRID_SIZE));
-            y = Math.floor(Math.random() * (CANVAS_HEIGHT / GRID_SIZE));
-        } while (
-            snake.some((segment) => segment.x === x && segment.y === y) ||
-            letters.some((letter) => letter.x === x && letter.y === y)
-        );
+function spawnLetter() {
+    let x, y;
+    do {
+        x = Math.floor(Math.random() * (CANVAS_WIDTH / GRID_SIZE));
+        y = Math.floor(Math.random() * (CANVAS_HEIGHT / GRID_SIZE));
+    } while (
+        snake.some((segment) => segment.x === x && segment.y === y) ||
+        letters.some((letter) => letter.x === x && letter.y === y)
+    );
 
-        letters.push({
-            x: x,
-            y: y,
-            letter: getRandomLetter(),
-        });
-    }
+    letters.push({
+        x: x,
+        y: y,
+        letter: getRandomLetter(),
+    });
+}
+
+function spawnLetters() {
+    // Only used at game start - spawns initial 2 letters
+    letters = [];
+    spawnLetter();
+    spawnLetter();
 }
 
 function drawGame() {
@@ -216,13 +220,18 @@ function moveSnake() {
         gameOver();
         return;
     }
-
     snake.unshift(head); // Check letter collection
     const letterIndex = letters.findIndex((letter) => letter.x === head.x && letter.y === head.y);
     if (letterIndex !== -1) {
         const collectedLetter = letters[letterIndex].letter;
         snakeLetters.push(collectedLetter); // Add to end instead of start
-        spawnLetters();
+        // Remove the collected letter
+        letters.splice(letterIndex, 1);
+        // Change the letter of the remaining tile
+        const otherIndex = 0; // Since we just removed one, there's only one left
+        letters[otherIndex].letter = getRandomLetter();
+        // Spawn a new letter in a different position
+        spawnLetter();
     } else {
         snake.pop();
         if (snakeLetters.length > snake.length - 1) {
