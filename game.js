@@ -74,7 +74,6 @@ let letterBag = [];
 let wordHistory = [];
 const MAX_HISTORY = 10;
 let pendingWordRemoval = null; // Queue for word processing between game steps
-let isProcessingWord = false; // Flag to disable collision detection during word processing
 
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -224,7 +223,7 @@ function moveSnake() {
     }
 
     // Check self collision only if not processing a word
-    if (!isProcessingWord && snake.some((segment) => segment.x === head.x && segment.y === head.y)) {
+    if (snake.some((segment) => segment.x === head.x && segment.y === head.y)) {
         gameOver();
         return;
     }
