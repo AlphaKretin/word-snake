@@ -125,6 +125,12 @@ canvas {
     border-bottom: 1px solid rgba(78, 205, 196, 0.2);
 }
 
+.word-history td:last-child,
+.high-scores td:nth-child(2) {
+    text-align: right;
+    padding-right: 10px;
+}
+
 .word-history tr:last-child td,
 .high-scores tr:last-child td {
     border-bottom: none;
