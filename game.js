@@ -155,11 +155,49 @@ function spawnLetter() {
     });
 }
 
+function isVowel(letter) {
+    return ["A", "E", "I", "O", "U"].includes(letter);
+}
+
 function spawnLetters() {
     // Only used at game start - spawns initial 2 letters
     letters = [];
+
+    // First letter - can be any letter
     spawnLetter();
-    spawnLetter();
+
+    // If first letter is not a vowel, ensure second letter is a vowel
+    if (!isVowel(letters[0].letter)) {
+        let x, y;
+        do {
+            x = Math.floor(Math.random() * (CANVAS_WIDTH / GRID_SIZE));
+            y = Math.floor(Math.random() * (CANVAS_HEIGHT / GRID_SIZE));
+        } while (
+            snake.some((segment) => segment.x === x && segment.y === y) ||
+            letters.some((letter) => letter.x === x && letter.y === y)
+        );
+
+        // Get vowels from the letter bag
+        let vowels = letterBag.filter(isVowel);
+        if (vowels.length === 0) {
+            // If no vowels in the bag, refill it and try again
+            refillLetterBag();
+            vowels = letterBag.filter(isVowel);
+        }
+
+        // Remove the selected vowel from the letter bag
+        const vowelIndex = letterBag.indexOf(vowels[Math.floor(Math.random() * vowels.length)]);
+        const vowel = letterBag.splice(vowelIndex, 1)[0];
+
+        letters.push({
+            x: x,
+            y: y,
+            letter: vowel,
+        });
+    } else {
+        // If first letter is already a vowel, second letter can be any letter
+        spawnLetter();
+    }
 }
 
 function drawGame() {
