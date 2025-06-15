@@ -7,6 +7,9 @@ const gameOverElement = document.getElementById("game-over");
 const finalScoreElement = document.getElementById("final-score");
 const highScoresElement = document.getElementById("high-scores");
 const historyElement = document.getElementById("word-history");
+const wordHistoryContainer = document.getElementById("word-history-container");
+const scoringSchemeContainer = document.getElementById("scoring-scheme-container");
+const scoringSchemeElement = document.getElementById("scoring-scheme");
 
 // High score management
 const MAX_HIGH_SCORES = 10;
@@ -298,12 +301,30 @@ function updateDisplay() {
     currentWordElement.textContent = currentWord;
 }
 
+// Calculate points for a word of given length
+function calculateWordPoints(length) {
+    return length > 3 ? Math.floor(100 * Math.pow(length - 3, 2)) : 0;
+}
+
+function showScoringScheme() {
+    wordHistoryContainer.style.display = "none";
+    scoringSchemeContainer.style.display = "block";
+    scoringSchemeElement.innerHTML = getScoringSchemeHTML();
+}
+
+function showWordHistory() {
+    wordHistoryContainer.style.display = "block";
+    scoringSchemeContainer.style.display = "none";
+}
+
 function updateWordHistory(word, points) {
     wordHistory.unshift({ word, points });
     if (wordHistory.length > MAX_HISTORY) {
         wordHistory.pop();
     }
 
+    // Show word history and update its contents
+    showWordHistory();
     historyElement.innerHTML = wordHistory
         .map((entry) => `<tr><td>${entry.word}</td><td>${entry.points}</td></tr>`)
         .join("");
@@ -322,7 +343,9 @@ function checkWord(word) {
                 return false;
             }
             availableLetters.splice(index, 1);
-        } // Find all indices to remove
+        }
+
+        // Find all indices to remove
         const indicesToRemove = wordLetters
             .map((letter) => snakeLetters.indexOf(letter))
             .filter((index) => index !== -1)
@@ -332,16 +355,8 @@ function checkWord(word) {
         const segmentIndicesToRemove = indicesToRemove.map((i) => i + 1);
         pendingWordRemoval = { indicesToRemove, segmentIndicesToRemove };
 
-        // Award points using adjusted scoring system
-        // 3 letters = 0 points (valid but no score)
-        // 4 letters = 100 points (minimum scoring word)
-        // 5 letters = 400 points
-        // 6 letters = 900 points
-        // etc., scaling quadratically after 4 letters
-        let points = 0;
-        if (word.length > 3) {
-            points = Math.floor(100 * Math.pow(word.length - 3, 2));
-        }
+        // Award points using the same calculation as shown in the scoring table
+        const points = calculateWordPoints(word.length);
         score += points;
         updateWordHistory(word, points);
         return true;
@@ -356,6 +371,17 @@ function gameOver() {
     saveHighScore(score);
 }
 
+// Generate HTML for the scoring scheme table
+function getScoringSchemeHTML() {
+    const rows = [];
+    // Add rows for lengths 3 to 10
+    for (let length = 3; length <= 10; length++) {
+        const points = calculateWordPoints(length);
+        rows.push(`<tr><td>${length}</td><td>${points}</td></tr>`);
+    }
+    return rows.join("");
+}
+
 function restartGame() {
     snake = [{ x: 10, y: 10 }];
     direction = { x: 1, y: 0 };
@@ -366,7 +392,7 @@ function restartGame() {
     gameRunning = true;
     currentWord = "";
     wordHistory = []; // Clear word history
-    historyElement.innerHTML = ""; // Clear history display
+    showScoringScheme(); // Show scoring scheme instead of empty history
     gameOverElement.style.display = "none";
     refillLetterBag(); // Initialize the letter bag
     spawnLetters();
@@ -468,6 +494,7 @@ function gameLoop() {
 refillLetterBag();
 spawnLetters();
 updateDisplay();
+showScoringScheme(); // Show scoring guide on initial load
 gameLoop();
 
 function processWordRemoval(wordInfo) {

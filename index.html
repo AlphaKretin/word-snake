@@ -24,18 +24,31 @@
                 </div>
 
                 <canvas id="gameCanvas" width="600" height="400"></canvas>
-
                 <div class="word-history">
-                    <h3>Word History</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Word</th>
-                                <th>Points</th>
-                            </tr>
-                        </thead>
-                        <tbody id="word-history"></tbody>
-                    </table>
+                    <div id="word-history-container">
+                        <h3>Word History</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Word</th>
+                                    <th>Points</th>
+                                </tr>
+                            </thead>
+                            <tbody id="word-history"></tbody>
+                        </table>
+                    </div>
+                    <div id="scoring-scheme-container" style="display: none">
+                        <h3>Scoring Guide</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Letters</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scoring-scheme"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
