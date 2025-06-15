@@ -511,8 +511,19 @@ document.addEventListener("keydown", (e) => {
             // Letter keys for word formation
             if (e.key.length === 1 && e.key.match(/[a-zA-Z]/)) {
                 const letter = e.key.toUpperCase();
-                if (snakeLetters.includes(letter)) {
+                if (
+                    snakeLetters.filter((l) => l === letter).length >
+                    currentWord.split("").filter((l) => l === letter).length
+                ) {
                     currentWord += letter;
+                } else {
+                    // Shake the current word to show the letter can't be used
+                    const wordElement = document.getElementById("current-word");
+                    wordElement.classList.add("shake-animation");
+                    // Remove the class after the animation completes
+                    setTimeout(() => {
+                        wordElement.classList.remove("shake-animation");
+                    }, 500);
                 }
                 e.preventDefault();
             }
