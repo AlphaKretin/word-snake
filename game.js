@@ -74,6 +74,8 @@ let letterBag = [];
 let wordHistory = [];
 const MAX_HISTORY = 10;
 let pendingWordRemoval = null; // Queue for word processing between game steps
+let lastBackspaceTime = 0; // Track the timing of the last backspace press
+const DOUBLE_PRESS_THRESHOLD = 300; // Time in milliseconds for double press detection
 
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -419,10 +421,22 @@ document.addEventListener("keydown", (e) => {
             e.preventDefault();
             break;
         }
-        case "Backspace":
-            currentWord = "";
+        case "Backspace": {
+            const now = Date.now();
+            const timeSinceLastBackspace = now - lastBackspaceTime;
+
+            if (timeSinceLastBackspace <= DOUBLE_PRESS_THRESHOLD) {
+                // Double backspace - clear the whole word
+                currentWord = "";
+            } else {
+                // Single backspace - remove last character
+                currentWord = currentWord.slice(0, -1);
+            }
+
+            lastBackspaceTime = now;
             e.preventDefault();
             break;
+        }
         case "Enter":
             if (currentWord.length >= 3 && checkWord(currentWord)) {
                 currentWord = "";
